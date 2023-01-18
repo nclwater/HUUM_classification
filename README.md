@@ -13,9 +13,12 @@ Plus, strictly speaking, two more:
 - Unsuitable: Time series which are, usually due to overall daily demand value, outside plausible bounds.
 - Unclassifyable: Time series, which, while not unsuitable, cannot be classified according to the logic implemented.
 
-This script has been developed for use in the Household Utility Usage Model HUUM during parameter adjustment.
-It is part of Sven Berendsen's PhD research 2018-2023 at Newcastle University.
-The documentation of the logic in classification can be found in the corresponding thesis (not yet published).
+It has _not_ been uploaded to the Python Package Index, so a manual install via pip is necessary.
+
+The documentation of the logic behind the classification can be found in the thesis _Agent Based Modelling of city-wide Water Demand_ (not yet published).
+
+Created by Sven Berendsen as part of his PhD project at Newcastle University, (C) 2023.
+Licenced under the terms of the Apache License 2.0.
 
 
 ## ToDo
