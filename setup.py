@@ -11,9 +11,9 @@ setuptools.setup(
     description="Classifies a given time series diurnal pattern",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://gitlab.com/LeoTolstoi/huum_classification/",
+    url="https://github.com/nclwater/HUUM_classification/",
     project_urls={
-        "Bug Tracker": "https://gitlab.com/LeoTolstoi/huum_classification/-/issues",
+        "Bug Tracker": "https://github.com/nclwater/HUUM_classification/-/issues",
     },
     classifiers=[
         "Programming Language :: Python :: 3",
