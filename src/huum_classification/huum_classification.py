@@ -1538,9 +1538,8 @@ class ClassificationInfo(object):
                 0 in df.index and 23 in df.index
             ), f'First and last index should be 0 & 23 resp, not {df.index[0]} and {df.index[-1]}'
 
-            val = df.iloc[0:pos_end, df.columns[0]].sum()
-            val += df.iloc[pos_start:len(self.df_diurnal.index),
-                           df.columns[0]].sum()
+            val = df.iloc[0:pos_end, 0].sum()
+            val += df.iloc[pos_start:len(self.df_diurnal.index), 0].sum()
             length = pos_end - 0 + len(self.df_diurnal.index) - pos_start
             mean_val = val / length
 
@@ -1550,7 +1549,7 @@ class ClassificationInfo(object):
                 _hline(0, max(df.index[pos_end] - 1, 0), mean_val)
             ]
         else:
-            mean_val = df.iloc[pos_start:pos_end + 1, df.columns[0]].mean()
+            mean_val = df.iloc[pos_start:pos_end + 1, 0].mean()
 
             self.hlines += [
                 _hline(df.index[pos_start], df.index[pos_end], mean_val)
@@ -1713,9 +1712,8 @@ class ClassificationInfo(object):
             #     print('\n',pos_start, pos_end, class_start, class_end)
             #     exit()
 
-            val = df.iloc[0:pos_end, df.columns[0]].sum()
-            val += df.iloc[pos_start:len(self.df_diurnal.index),
-                           df.columns[0]].sum()
+            val = df.iloc[0:pos_end, 0].sum()
+            val += df.iloc[pos_start:len(self.df_diurnal.index), 0].sum()
             length = pos_end - 0 + len(self.df_diurnal.index) - pos_start
             mean_val = val / length
 
@@ -1725,7 +1723,7 @@ class ClassificationInfo(object):
                 _hline(0, max(df.index[pos_end] - 1, 0), mean_val)
             ]
         else:
-            mean_val = df.iloc[pos_start:pos_end + 1, df.columns[0]].mean()
+            mean_val = df.iloc[pos_start:pos_end + 1, 0].mean()
             self.hlines += [
                 _hline(df.index[pos_start], df.index[pos_end], mean_val)
             ]
@@ -2150,12 +2148,12 @@ def _get_maxima_pos(df: pd.DataFrame, testing: bool):
 
     for i in range(0, len(df.index)):
 
-        if (df.iloc[i, df.columns[0]] < val_min):
-            val_min = df.iloc[i, df.columns[0]]
+        if (df.iloc[i, 0] < val_min):
+            val_min = df.iloc[i, 0]
             pos_min = i
 
-        if (df.iloc[i, df.columns[0]] > val_max):
-            val_max = df.iloc[i, df.columns[0]]
+        if (df.iloc[i, 0] > val_max):
+            val_max = df.iloc[i, 0]
             pos_max = i
 
     return _position(pos_min, val_min), _position(pos_max, val_max)
