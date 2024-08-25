@@ -58,7 +58,6 @@ import plotly.graph_objects as go
 
 # 1. Global vars ===============================================================
 
-_logging = False
 _extensive_log = False
 
 # settings
@@ -67,6 +66,7 @@ _max_search_range = 5  # how far to search for a local maxima
 _max_search_range_check = 1  # how far to search for finding the local changed values
 _max_allowed_concentration = 50.0  # [%] maximum allowed volume part at one timestep
 _min_non_zero_needed = 8  # minimum number of non-zero entries required
+_spread_long_peak = 0.70  # what percentage points in a long peak should be of lvl 5
 _min_peak_distance = 6  # how far peaks should be apart to be counted as "distinct"
 _min_num_max_level = 8  # how many entries need to be at least at top level for classing it as "one long peak"
 _min_sum_viable = 60.0  # minimum daily sum from which the time series might be sensible
@@ -380,14 +380,20 @@ class ClassificationInfo(object):
         # otherwise distinguish between the main classes
         counts_point_info = self.df_diurnal['point_info'].value_counts()
 
-        # long peak - add fuzzy "a bit of one level lower is ok"-test
+        # long peak
+        # TODO add fuzzy "a bit of one level lower is ok"-test
         flag = 4 in counts_classes.index
-        if _logging:
-            print(f'Check for level 4 in distribution {flag}')
+        if testing:
+            print(f'Checking for level 4 in distribution - is {flag}')
 
         if flag:
             spread, pos_start, pos_end = _get_level_spread(self.df_diurnal, 4)
-            if (counts_classes[4] >= _min_num_max_level and spread >= 0.75):
+            if testing:
+                print(
+                    f'Long Peak Testing: spread {spread}, start {pos_start}, '
+                    f'end {pos_end}')
+            if (counts_classes[4] >= _min_num_max_level
+                    and spread >= _spread_long_peak):
 
                 self.classed = 'long_peak'
 
@@ -436,7 +442,7 @@ class ClassificationInfo(object):
         num_peaks, peaks = _get_num_distinct_peaks(self.df_diurnal)
 
         flag = ('max' in counts_point_info.index)
-        if _logging:
+        if testing:
             print(f'Check for absolute maxima in distribution {flag}')
             print(
                 f'Num_peaks {num_peaks} and max points {counts_point_info["max"]}'
@@ -1034,6 +1040,8 @@ class ClassificationInfo(object):
             fn = f'{out_dir}{self.name}.png'
         else:
             fn = f'{out_dir}{self.name}_{postfix}.png'
+
+        print("writing to", fn)
 
         fig.write_image(fn)
 
@@ -1883,6 +1891,9 @@ class ClassificationInfo(object):
 
         # general stuff
         if self.classed not in valid_classes:
+            print("invalid class")
+            if testing:
+                print(f'Error: Unsupported class {self.classed}')
             return
 
         # assert self.classed in ['long_peak', 'two_peaks', 'one_peak'
@@ -1890,6 +1901,7 @@ class ClassificationInfo(object):
 
         # prep
         self.df_diurnal['abstract'] = np.nan
+
         pos_abstract = self.df_diurnal.columns.get_loc('abstract')
         pos_classified = self.df_diurnal.columns.get_loc("classified")
         self._enter_hlines()
@@ -2468,7 +2480,7 @@ def _get_point_info(df: pd.DataFrame):
 
     # fix for last entry max
     # FIXME put into the above loop
-    if int(df.iloc[i][pos_classified]) == 4 and df.iloc[-1, 0] > df.iloc[-2,
+    if int(df.iloc[i, pos_classified]) == 4 and df.iloc[-1, 0] > df.iloc[-2,
                                                                          0]:
         df.iat[len(df.index) - 1, pos_point_info] = 'max'
 
