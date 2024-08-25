@@ -270,15 +270,15 @@ class ClassificationInfo(object):
 
         # daily stuff
         df_resampled_day = df_internal.resample("1D").sum()
-        self.daily_mean = df_resampled_day.mean()[0]
-        self.daily_max = df_resampled_day.max()[0]
+        self.daily_mean = df_resampled_day.mean().iloc[0]
+        self.daily_max = df_resampled_day.max().iloc[0]
 
         # get the diurnal mean
-        df_hourly = df_internal.resample('1H').sum()
+        df_hourly = df_internal.resample('1h').sum()
         self.df_diurnal = df_hourly.groupby(df_hourly.index.hour).mean()
-        self.diurnal_mean = self.df_diurnal.mean()[0]
-        self.diurnal_max = self.df_diurnal.max()[0]
-        self.diurnal_min = self.df_diurnal.min()[0]
+        self.diurnal_mean = self.df_diurnal.mean().iloc[0]
+        self.diurnal_max = self.df_diurnal.max().iloc[0]
+        self.diurnal_min = self.df_diurnal.min().iloc[0]
 
         # self.lower_spread = (1.0 - _lower_division) * self.diurnal_mean
         self.upper_spread = _upper_division * (
@@ -326,12 +326,12 @@ class ClassificationInfo(object):
 
         for i in range(0, len(self.df_diurnal.index)):
             self.df_diurnal.iat[i, pos_classified] = _classify_four_parts(
-                self.df_diurnal.iloc[i][0], self.lower_spread,
+                self.df_diurnal.iloc[i, 0], self.lower_spread,
                 self.diurnal_mean, self.upper_spread, self.diurnal_max)
 
             self.df_diurnal.iat[
                 i, pos_classified_nearly] = _classify_nearly_four_parts(
-                    self.df_diurnal.iloc[i][0], self.lower_spread,
+                    self.df_diurnal.iloc[i, 0], self.lower_spread,
                     self.diurnal_mean, self.upper_spread, self.diurnal_max)
 
         # go through and get min/max points
@@ -371,8 +371,8 @@ class ClassificationInfo(object):
         counts_classes = self.df_diurnal['classified'].value_counts()
 
         if 0 in counts_classes.index:
-            if (_min_non_zero_needed <
-                    len(self.df_diurnal.index) - counts_classes[0]):
+            if (_min_non_zero_needed
+                    < len(self.df_diurnal.index) - counts_classes[0]):
                 self.classed = 'crap'
                 self.sub_classed = 'few_data_points'
                 return
@@ -673,8 +673,9 @@ class ClassificationInfo(object):
         TODO Replace by the plotly version - plot_display is still missing some data output
         """
 
-        if (self.df_diurnal is None) or (self.classed is
-                                         None) or (self.diurnal_mean <= 0.0):
+        if (self.df_diurnal is None) or (self.classed
+                                         is None) or (self.diurnal_mean
+                                                      <= 0.0):
             return
 
         if ("classified" not in self.df_diurnal.columns) or (
@@ -699,18 +700,18 @@ class ClassificationInfo(object):
         # add backgrounds
         # walk through and colour according to group
         start = 0
-        val = int(self.df_diurnal.iloc[0][pos_classified])
+        val = int(self.df_diurnal.iloc[0, pos_classified])
 
         for i in range(1, len(self.df_diurnal.index)):
 
-            if self.df_diurnal.iloc[i][pos_point_info] == 'max':
+            if self.df_diurnal.iloc[i, pos_point_info] == 'max':
                 plt.axvline(x=i, color="black")
 
-            if self.df_diurnal.iloc[i][pos_point_info] == 'min':
+            if self.df_diurnal.iloc[i, pos_point_info] == 'min':
                 plt.axvline(x=i, color="violet")
 
             # if changes
-            if (val != int(self.df_diurnal.iloc[i][pos_classified])):
+            if (val != int(self.df_diurnal.iloc[i, pos_classified])):
 
                 # do the background colourisation
                 plt.axvspan(xmin=max(start - 0.5, 0),
@@ -719,7 +720,7 @@ class ClassificationInfo(object):
                             alpha=0.25)
 
                 # setups for next instance
-                val = int(self.df_diurnal.iloc[i][pos_classified])
+                val = int(self.df_diurnal.iloc[i, pos_classified])
                 start = i
 
         # finish last box
@@ -733,10 +734,10 @@ class ClassificationInfo(object):
         num_max = 0
 
         for i in range(0, len(self.df_diurnal.index)):
-            if self.df_diurnal.iloc[i][pos_point_info] == 'max':
+            if self.df_diurnal.iloc[i, pos_point_info] == 'max':
                 num_max += 1
 
-            if self.df_diurnal.iloc[i][pos_point_info] == 'min':
+            if self.df_diurnal.iloc[i, pos_point_info] == 'min':
                 num_min += 1
 
         # horizontal info lines
@@ -841,8 +842,9 @@ class ClassificationInfo(object):
             into_dirs   Whether it should be put into subdirs according to classification.
         """
 
-        if (self.df_diurnal is None) or (self.classed is
-                                         None) or (self.diurnal_mean <= 0.0):
+        if (self.df_diurnal is None) or (self.classed
+                                         is None) or (self.diurnal_mean
+                                                      <= 0.0):
             return
 
         if ("classified" not in self.df_diurnal.columns) or (
@@ -871,11 +873,11 @@ class ClassificationInfo(object):
         # add backgrounds
         # walk through and colour according to group
         start = 0
-        val = int(self.df_diurnal.iloc[0][pos_classified])
+        val = int(self.df_diurnal.iloc[0, pos_classified])
 
         for i in range(1, len(self.df_diurnal.index)):
 
-            if self.df_diurnal.iloc[i][pos_point_info] == 'max':
+            if self.df_diurnal.iloc[i, pos_point_info] == 'max':
                 fig.add_vline(
                     x=i,
                     line_width=2,
@@ -889,7 +891,7 @@ class ClassificationInfo(object):
                         yanchor="top",
                         y=0.2))
 
-            if self.df_diurnal.iloc[i][pos_point_info] == 'min':
+            if self.df_diurnal.iloc[i, pos_point_info] == 'min':
                 fig.add_vline(
                     x=i,
                     line_width=2,
@@ -903,7 +905,7 @@ class ClassificationInfo(object):
                         yanchor="top"))
 
             # if changes
-            if (val != int(self.df_diurnal.iloc[i][pos_classified])):
+            if (val != int(self.df_diurnal.iloc[i, pos_classified])):
 
                 # do the background colourisation
                 fig.add_vrect(x0=start - 0.5,
@@ -913,7 +915,7 @@ class ClassificationInfo(object):
                               line_width=0)
 
                 # setups for next instance
-                val = int(self.df_diurnal.iloc[i][pos_classified])
+                val = int(self.df_diurnal.iloc[i, pos_classified])
                 start = i
 
         # finish last box
@@ -1216,13 +1218,13 @@ class ClassificationInfo(object):
             pos_max = -1.0
             val_max = -1.0
             for i in range(0, info.day_min_x + 1):
-                if (self.df_diurnal.iloc[i][0] > val_max):
-                    val_max = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] > val_max):
+                    val_max = self.df_diurnal.iloc[i, 0]
                     pos_max = i
 
             for i in range(info.night_min_x, len(self.df_diurnal.index)):
-                if (self.df_diurnal.iloc[i][0] > val_max):
-                    val_max = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] > val_max):
+                    val_max = self.df_diurnal.iloc[i, 0]
                     pos_max = i
 
             self.morning_max_x = pos_max
@@ -1232,8 +1234,8 @@ class ClassificationInfo(object):
             pos_max = -1.0
             val_max = -1.0
             for i in range(info.day_min_x, info.night_min_x + 1):
-                if (self.df_diurnal.iloc[i][0] > val_max):
-                    val_max = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] > val_max):
+                    val_max = self.df_diurnal.iloc[i, 0]
                     pos_max = i
 
             self.evening_max_x = pos_max
@@ -1245,8 +1247,8 @@ class ClassificationInfo(object):
             val_max = -1.0
 
             for i in range(info.night_min_x, info.day_min_x + 1):
-                if (self.df_diurnal.iloc[i][0] > val_max):
-                    val_max = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] > val_max):
+                    val_max = self.df_diurnal.iloc[i, 0]
                     pos_max = i
 
             self.morning_max_x = pos_max
@@ -1256,13 +1258,13 @@ class ClassificationInfo(object):
             pos_max = -1.0
             val_max = -1.0
             for i in range(0, info.night_min_x + 1):
-                if (self.df_diurnal.iloc[i][0] > val_max):
-                    val_max = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] > val_max):
+                    val_max = self.df_diurnal.iloc[i, 0]
                     pos_max = i
 
             for i in range(info.day_min_x, len(self.df_diurnal.index)):
-                if (self.df_diurnal.iloc[i][0] > val_max):
-                    val_max = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] > val_max):
+                    val_max = self.df_diurnal.iloc[i, 0]
                     pos_max = i
 
             self.evening_max_x = pos_max
@@ -1275,13 +1277,13 @@ class ClassificationInfo(object):
             pos_min = -1.0
             val_min = 1000000
             for i in range(0, self.evening_max_x):
-                if (self.df_diurnal.iloc[i][0] < val_min):
-                    val_min = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] < val_min):
+                    val_min = self.df_diurnal.iloc[i, 0]
                     pos_min = i
 
             for i in range(self.morning_max_x, len(self.df_diurnal.index)):
-                if (self.df_diurnal.iloc[i][0] < val_min):
-                    val_min = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] < val_min):
+                    val_min = self.df_diurnal.iloc[i, 0]
                     pos_min = i
 
             self.day_min_x = pos_min
@@ -1292,8 +1294,8 @@ class ClassificationInfo(object):
             val_min = 1000000
 
             for i in range(self.evening_max_x, self.morning_max_x):
-                if (self.df_diurnal.iloc[i][0] < val_min):
-                    val_min = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] < val_min):
+                    val_min = self.df_diurnal.iloc[i, 0]
                     pos_min = i
 
             self.night_min_x = pos_min
@@ -1306,8 +1308,8 @@ class ClassificationInfo(object):
             val_min = 1000000
 
             for i in range(self.morning_max_x, self.evening_max_x):
-                if (self.df_diurnal.iloc[i][0] < val_min):
-                    val_min = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] < val_min):
+                    val_min = self.df_diurnal.iloc[i, 0]
                     pos_min = i
 
             self.day_min_x = pos_min
@@ -1318,13 +1320,13 @@ class ClassificationInfo(object):
             val_min = 1000000
 
             for i in range(0, self.morning_max_x):
-                if (self.df_diurnal.iloc[i][0] < val_min):
-                    val_min = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] < val_min):
+                    val_min = self.df_diurnal.iloc[i, 0]
                     pos_min = i
 
             for i in range(self.evening_max_x, len(self.df_diurnal.index)):
-                if (self.df_diurnal.iloc[i][0] < val_min):
-                    val_min = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] < val_min):
+                    val_min = self.df_diurnal.iloc[i, 0]
                     pos_min = i
 
             self.night_min_x = pos_min
@@ -1341,8 +1343,8 @@ class ClassificationInfo(object):
                 info.morning_max_x - _max_search_range,
                 min(len(self.df_diurnal.index),
                     info.morning_max_x + _max_search_range + 1)):
-            if (self.df_diurnal.iloc[i][0] > val_max):
-                val_max = self.df_diurnal.iloc[i][0]
+            if (self.df_diurnal.iloc[i, 0] > val_max):
+                val_max = self.df_diurnal.iloc[i, 0]
                 pos_max = i
 
         # deal with forward wrap-around
@@ -1352,8 +1354,8 @@ class ClassificationInfo(object):
             for i in range(
                     0, info.morning_max_x + _max_search_range + 1 -
                     len(self.df_diurnal.index)):
-                if (self.df_diurnal.iloc[i][0] > val_max):
-                    val_max = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] > val_max):
+                    val_max = self.df_diurnal.iloc[i, 0]
                     pos_max = i
 
         if (pos_max >= 0):
@@ -1380,8 +1382,8 @@ class ClassificationInfo(object):
                 info.evening_max_x - _max_search_range,
                 min(len(self.df_diurnal.index),
                     info.evening_max_x + _max_search_range + 1)):
-            if (self.df_diurnal.iloc[i][0] > val_max):
-                val_max = self.df_diurnal.iloc[i][0]
+            if (self.df_diurnal.iloc[i, 0] > val_max):
+                val_max = self.df_diurnal.iloc[i, 0]
                 pos_max = i
 
         # deal with case "forward wrap around"
@@ -1390,8 +1392,8 @@ class ClassificationInfo(object):
             for i in range(
                     0, info.evening_max_x + _max_search_range + 1 -
                     len(self.df_diurnal.index)):
-                if (self.df_diurnal.iloc[i][0] > val_max):
-                    val_max = self.df_diurnal.iloc[i][0]
+                if (self.df_diurnal.iloc[i, 0] > val_max):
+                    val_max = self.df_diurnal.iloc[i, 0]
                     pos_max = i
 
         if (pos_max >= 0):
@@ -1507,10 +1509,10 @@ class ClassificationInfo(object):
 
         # get the positions
         for i in range(0, len(df.index)):
-            if (df.iloc[i][pos_classified] == class_start) and pos_start == -1:
+            if (df.iloc[i, pos_classified] == class_start) and pos_start == -1:
                 pos_start = i
 
-            elif pos_start != -1 and df.iloc[i][pos_classified] == class_end:
+            elif pos_start != -1 and df.iloc[i, pos_classified] == class_end:
                 pos_end = i
 
         if pos_end == -1:
@@ -1519,8 +1521,8 @@ class ClassificationInfo(object):
         # get mean, add bar
         if testing and _extensive_log:
             print('   getBar', pos_start, df.index[pos_start], pos_end,
-                  df.index[pos_end], _complex_bar_id,
-                  df.index[pos_start] > df.index[pos_end])
+                  df.index[pos_end], _complex_bar_id, df.index[pos_start]
+                  > df.index[pos_end])
 
         if df.index[pos_start] > df.index[pos_end]:
 
@@ -1528,9 +1530,9 @@ class ClassificationInfo(object):
                 0 in df.index and 23 in df.index
             ), f'First and last index should be 0 & 23 resp, not {df.index[0]} and {df.index[-1]}'
 
-            val = df.iloc[0:pos_end][df.columns[0]].sum()
-            val += df.iloc[pos_start:len(self.df_diurnal.index)][
-                df.columns[0]].sum()
+            val = df.iloc[0:pos_end, df.columns[0]].sum()
+            val += df.iloc[pos_start:len(self.df_diurnal.index),
+                           df.columns[0]].sum()
             length = pos_end - 0 + len(self.df_diurnal.index) - pos_start
             mean_val = val / length
 
@@ -1540,7 +1542,7 @@ class ClassificationInfo(object):
                 _hline(0, max(df.index[pos_end] - 1, 0), mean_val)
             ]
         else:
-            mean_val = df.iloc[pos_start:pos_end + 1][df.columns[0]].mean()
+            mean_val = df.iloc[pos_start:pos_end + 1, df.columns[0]].mean()
 
             self.hlines += [
                 _hline(df.index[pos_start], df.index[pos_end], mean_val)
@@ -1592,17 +1594,17 @@ class ClassificationInfo(object):
         self.day_min_y = mean_val
 
         _asserting_types(self.evening_max_x, 'evening_max_x', int, 'int',
-                         np.int64, 'np.int64')
-        _asserting_types(self.day_min_x, 'day_min_x', int, 'int', np.int64,
-                         'np.int64')
-        _asserting_types(self.night_min_x, 'night_min_x', int, 'int', np.int64,
-                         'np.int64')
+                         np.int32, 'np.int32', np.int64, 'np.int64')
+        _asserting_types(self.day_min_x, 'day_min_x', int, 'int', np.int32,
+                         'np.int32', np.int64, 'np.int64')
+        _asserting_types(self.night_min_x, 'night_min_x', int, 'int', np.int32,
+                         'np.int32', np.int64, 'np.int64')
         _asserting_types(self.evening_max_y, 'evening_max_y', float, 'float',
-                         np.float64, 'np.float64')
+                         np.float32, 'np.float32', np.float64, 'np.float64')
         _asserting_types(self.day_min_y, 'day_min_y', float, 'float',
-                         np.float64, 'np.float64')
+                         np.float32, 'np.float32', np.float64, 'np.float64')
         _asserting_types(self.night_min_y, 'night_min_y', float, 'float',
-                         np.float64, 'np.float64')
+                         np.float32, 'np.float32', np.float64, 'np.float64')
 
         return
 
@@ -1679,10 +1681,10 @@ class ClassificationInfo(object):
 
         # get the positions
         for i in range(len(df.index) - 1, 0, -1):
-            if (df.iloc[i][pos_classified] == class_start) and pos_end == -1:
+            if (df.iloc[i, pos_classified] == class_start) and pos_end == -1:
                 pos_end = i
 
-            elif pos_end != -1 and df.iloc[i][pos_classified] == class_end:
+            elif pos_end != -1 and df.iloc[i, pos_classified] == class_end:
                 pos_start = i
 
         if pos_start == -1:
@@ -1703,9 +1705,9 @@ class ClassificationInfo(object):
             #     print('\n',pos_start, pos_end, class_start, class_end)
             #     exit()
 
-            val = df.iloc[0:pos_end][df.columns[0]].sum()
-            val += df.iloc[pos_start:len(self.df_diurnal.index)][
-                df.columns[0]].sum()
+            val = df.iloc[0:pos_end, df.columns[0]].sum()
+            val += df.iloc[pos_start:len(self.df_diurnal.index),
+                           df.columns[0]].sum()
             length = pos_end - 0 + len(self.df_diurnal.index) - pos_start
             mean_val = val / length
 
@@ -1715,7 +1717,7 @@ class ClassificationInfo(object):
                 _hline(0, max(df.index[pos_end] - 1, 0), mean_val)
             ]
         else:
-            mean_val = df.iloc[pos_start:pos_end + 1][df.columns[0]].mean()
+            mean_val = df.iloc[pos_start:pos_end + 1, df.columns[0]].mean()
             self.hlines += [
                 _hline(df.index[pos_start], df.index[pos_end], mean_val)
             ]
@@ -1760,17 +1762,17 @@ class ClassificationInfo(object):
         self.day_min_y = mean_val
 
         _asserting_types(self.morning_max_x, 'morning_max_x', int, 'int',
-                         np.int64, 'np.int64')
-        _asserting_types(self.day_min_x, 'day_min_x', int, 'int', np.int64,
-                         'np.int64')
-        _asserting_types(self.night_min_x, 'night_min_x', int, 'int', np.int64,
-                         'np.int64')
+                         np.int32, 'np.int32', np.int64, 'np.int64')
+        _asserting_types(self.day_min_x, 'day_min_x', int, 'int', np.int32,
+                         'np.int32', np.int64, 'np.int64')
+        _asserting_types(self.night_min_x, 'night_min_x', int, 'int', np.int32,
+                         'np.int32', np.int64, 'np.int64')
         _asserting_types(self.morning_max_y, 'morning_max_y', float, 'float',
-                         np.float64, 'np.float64')
+                         np.float32, 'np.float32', np.float64, 'np.float64')
         _asserting_types(self.day_min_y, 'day_min_y', float, 'float',
-                         np.float64, 'np.float64')
+                         np.float32, 'np.float32', np.float64, 'np.float64')
         _asserting_types(self.night_min_y, 'night_min_y', float, 'float',
-                         np.float64, 'np.float64')
+                         np.float32, 'np.float32', np.float64, 'np.float64')
 
         return
 
@@ -2110,10 +2112,13 @@ class ClassificationInfo(object):
 
 
 def _asserting_types(var, str_var: str, type_01, str_type_01: str, type_02,
-                     str_type_02: str):
-    assert type(var) is type_01 or type(
+                     str_type_02: str, type_03, str_type_03: str):
+
+    # TODO: refactor to take a list of tuples instead
+
+    assert type(var) is type_01 or type(var) is type_02 or type(
         var
-    ) is type_02, f'{str_var} is neither {str_type_01} nor {str_type_02}, but {type(var)}'
+    ) is type_03, f'{str_var} is neither {str_type_01} nor {str_type_02} nor {str_type_03}, but {type(var)}'
 
 
 def _check_concentration(df: pd.DataFrame):
@@ -2133,12 +2138,12 @@ def _get_maxima_pos(df: pd.DataFrame, testing: bool):
 
     for i in range(0, len(df.index)):
 
-        if (df.iloc[i][df.columns[0]] < val_min):
-            val_min = df.iloc[i][df.columns[0]]
+        if (df.iloc[i, df.columns[0]] < val_min):
+            val_min = df.iloc[i, df.columns[0]]
             pos_min = i
 
-        if (df.iloc[i][df.columns[0]] > val_max):
-            val_max = df.iloc[i][df.columns[0]]
+        if (df.iloc[i, df.columns[0]] > val_max):
+            val_max = df.iloc[i, df.columns[0]]
             pos_max = i
 
     return _position(pos_min, val_min), _position(pos_max, val_max)
@@ -2160,11 +2165,11 @@ def _get_peak_position(df: pd.DataFrame, testing: bool):
 
     # go through once
     for i in range(0, len(df.index)):
-        if (df.iloc[i][pos_classified] == min_classified
+        if (df.iloc[i, pos_classified] == min_classified
                 and range_start == -1):
             range_start = i
 
-        elif (df.iloc[i][pos_classified] != min_classified
+        elif (df.iloc[i, pos_classified] != min_classified
               and range_start != -1):
             list_spans.append([range_start, i - 1, i - range_start - 1])
             range_start = -1
@@ -2180,8 +2185,8 @@ def _get_peak_position(df: pd.DataFrame, testing: bool):
         print('list_spans:', list_spans)
 
     # deal with case: start and end are both lowest class
-    if df.iloc[0][pos_classified] == min_classified and df.iloc[-1][
-            pos_classified] == min_classified:
+    if df.iloc[0, pos_classified] == min_classified and df.iloc[
+            -1, pos_classified] == min_classified:
         list_spans[0][0] = list_spans[0][1]
         list_spans[0][1] = range_start
         list_spans[0][2] += len(df.index) - range_start
@@ -2196,12 +2201,12 @@ def _get_peak_position(df: pd.DataFrame, testing: bool):
     pos_min = -1
     val_min = 10000000
     for i in df.index:
-        if (df.iloc[i][pos_point_info] == 'max' and val_max < df.iloc[i][0]):
+        if (df.iloc[i, pos_point_info] == 'max' and val_max < df.iloc[i, 0]):
             pos_max = i
-            val_max = df.iloc[i][0]
-        if (df.iloc[i][pos_point_info] == 'min' and val_min > df.iloc[i][0]):
+            val_max = df.iloc[i, 0]
+        if (df.iloc[i, pos_point_info] == 'min' and val_min > df.iloc[i, 0]):
             pos_min = i
-            val_min = df.iloc[i][0]
+            val_min = df.iloc[i, 0]
 
     # get pos of largest extend
     pos_item = -1
@@ -2340,10 +2345,10 @@ def _get_num_distinct_peaks(df: pd.DataFrame):
     current_pos = -1
 
     for i in range(0, len(df.index)):
-        if df.iloc[i][pos_point_info] == 'max':
+        if df.iloc[i, pos_point_info] == 'max':
             if last_peak == -1 or (i - last_max) >= _min_peak_distance:
                 # record last peak
-                unique_peaks += [_position(i, df.iloc[i][0])]
+                unique_peaks += [_position(i, df.iloc[i, 0])]
                 current_pos += 1
 
                 # increment
@@ -2353,12 +2358,13 @@ def _get_num_distinct_peaks(df: pd.DataFrame):
             last_max = i
 
             # for other max check for maximum height
-            if (unique_peaks[current_pos].y < df.iloc[i][0]):
-                unique_peaks[current_pos] = _position(i, df.iloc[i][0])
+            if (unique_peaks[current_pos].y < df.iloc[i, 0]):
+                unique_peaks[current_pos] = _position(i, df.iloc[i, 0])
 
     # check for wrap-around
-    if df.iloc[0][pos_point_info] == 'max' and df.iloc[
-            len(df.index) - 1][pos_point_info] == 'max':
+    if df.iloc[0,
+               pos_point_info] == 'max' and df.iloc[len(df.index) - 1,
+                                                    pos_point_info] == 'max':
         num -= 1
 
         # deal with recording
@@ -2381,9 +2387,9 @@ def _get_troughs(df: pd.DataFrame):
     pos_point_info = df.columns.get_loc("point_info")
 
     for i in range(0, len(df.index)):
-        if df.iloc[i][pos_point_info] == 'min' or df.iloc[i][
-                pos_point_info] == 'local_min':
-            troughs += [_position(i, df.iloc[i][0])]
+        if df.iloc[i, pos_point_info] == 'min' or df.iloc[
+                i, pos_point_info] == 'local_min':
+            troughs += [_position(i, df.iloc[i, 0])]
 
     return troughs
 
@@ -2399,11 +2405,11 @@ def _get_level_spread(df: pd.DataFrame, level: float):
     num = 0
 
     for i in range(0, len(df.index)):
-        if (df.iloc[i][pos_classified] >= level and pos_start == -1):
+        if (df.iloc[i, pos_classified] >= level and pos_start == -1):
             pos_start = i
             pos_last = i
             num += 1
-        elif (df.iloc[i][pos_classified] >= level):
+        elif (df.iloc[i, pos_classified] >= level):
             pos_last = i
             num += 1
 
@@ -2421,7 +2427,7 @@ def _get_point_info(df: pd.DataFrame):
     pos_point_info = df.columns.get_loc("point_info")
 
     # walk through and colour according to group
-    val = int(df.iloc[0][pos_classified])
+    val = int(df.iloc[0, pos_classified])
     val_before = int(df["classified"].max()) + 1
     max_val = -1000.0
     max_val_pos = -1
@@ -2432,87 +2438,87 @@ def _get_point_info(df: pd.DataFrame):
     for i in range(0, len(df.index)):
 
         # max val stuff
-        if (df.iloc[i][0] > max_val):
-            max_val = df.iloc[i][0]
+        if (df.iloc[i, 0] > max_val):
+            max_val = df.iloc[i, 0]
             max_val_pos = i
 
         # min val stuff
-        if (df.iloc[i][0] < min_val):
-            min_val = df.iloc[i][0]
+        if (df.iloc[i, 0] < min_val):
+            min_val = df.iloc[i, 0]
             min_val_pos = i
 
         # if changes
-        if (val != int(df.iloc[i][pos_classified])):
+        if (val != int(df.iloc[i, pos_classified])):
 
             # do max value
             if (val == 4):
                 df.iat[max_val_pos, pos_point_info] = 'max'
 
             # go for min value
-            if (val < int(df.iloc[i][pos_classified]) and val < val_before):
+            if (val < int(df.iloc[i, pos_classified]) and val < val_before):
                 df.iat[min_val_pos, pos_point_info] = 'min'
 
             # setups for next instance
             val_before = val
-            val = int(df.iloc[i][pos_classified])
-            max_val = df.iloc[i][0]
+            val = int(df.iloc[i, pos_classified])
+            max_val = df.iloc[i, 0]
             max_val_pos = i
-            min_val = df.iloc[i][0]
+            min_val = df.iloc[i, 0]
             min_val_pos = i
 
     # fix for last entry max
     # FIXME put into the above loop
-    if int(df.iloc[i]
-           [pos_classified]) == 4 and df.iloc[-1][0] > df.iloc[-2][0]:
+    if int(df.iloc[i][pos_classified]) == 4 and df.iloc[-1, 0] > df.iloc[-2,
+                                                                         0]:
         df.iat[len(df.index) - 1, pos_point_info] = 'max'
 
     # check first position for wrap around
-    if df.iloc[0][pos_point_info] == 'max' and df.iloc[0][0] < df.iloc[-1][0]:
+    if df.iloc[0, pos_point_info] == 'max' and df.iloc[0, 0] < df.iloc[-1, 0]:
         df.iat[0, pos_point_info] = 'point'
 
     # check last position for wrap around
-    if df.iloc[-1][pos_point_info] == 'max' and df.iloc[0][0] > df.iloc[-1][0]:
+    if df.iloc[-1, pos_point_info] == 'max' and df.iloc[0, 0] > df.iloc[-1, 0]:
         df.iat[0, pos_point_info] = 'point'
 
     # finish last entries
-    if (val < int(df.iloc[i][pos_classified])):
+    if (val < int(df.iloc[i, pos_classified])):
         df.iat[min_val_pos, pos_point_info] = 'min'
 
     if (val == 4):
         df.iat[max_val_pos, pos_point_info] = 'max'
 
     # check for wrap-around
-    if (df.iloc[0][pos_classified] == 4 and df.iloc[-1][pos_classified] == 4):
+    if (df.iloc[0, pos_classified] == 4 and df.iloc[-1, pos_classified] == 4):
 
         flag = True
 
         # find first max from the start
         pos_start = -1
         for i in range(0, len(df.index)):
-            if (df.iloc[i][pos_point_info] == 'max'):
+            if (df.iloc[i, pos_point_info] == 'max'):
                 pos_start = i
                 break
-            if df.iloc[i][pos_classified] != 4:
+            if df.iloc[i, pos_classified] != 4:
                 flag = False
                 break
 
         # find first max from the end
         pos_end = -1
         for i in range(len(df.index) - 1, -1, -1):
-            if (df.iloc[i][pos_point_info] == 'max'):
+            if (df.iloc[i, pos_point_info] == 'max'):
                 pos_end = i
                 break
-            if df.iloc[i][pos_classified] != 4:
+            if df.iloc[i, pos_classified] != 4:
                 flag = False
                 break
 
         # remove the max, which ever is lower
         if flag:
             if not (pos_start == -1 or pos_end == -1):
-                if (df.iloc[pos_start][0] > df.iloc[pos_end][0]):
+                if (df.iloc[pos_start, 0] > df.iloc[pos_end, 0]):
                     df.iat[pos_end, pos_point_info] = 'point'
 
-                elif (df.iloc[pos_start][0] < df.iloc[pos_end][0]):
+                elif (df.iloc[pos_start, 0] < df.iloc[pos_end, 0]):
                     df.iat[pos_start, pos_point_info] = 'point'
 
                 else:
@@ -2521,13 +2527,13 @@ def _get_point_info(df: pd.DataFrame):
     # deal with wrap around local minima
 
     # first point
-    if df.iloc[0][0] < df.iloc[1][0] and df.iloc[0][0] < df.iloc[-1][
-            0] and df.iloc[0, pos_point_info] != 'min':
+    if df.iloc[0, 0] < df.iloc[1, 0] and df.iloc[0, 0] < df.iloc[
+            -1, 0] and df.iloc[0, pos_point_info] != 'min':
         df.iat[0, pos_point_info] = 'local_min'
 
     # last point
-    if df.iloc[-1][0] < df.iloc[-2][0] and df.iloc[-1][0] < df.iloc[0][
-            0] and df.iloc[-1, pos_point_info] != 'min':
+    if df.iloc[-1, 0] < df.iloc[-2, 0] and df.iloc[-1, 0] < df.iloc[
+            0, 0] and df.iloc[-1, pos_point_info] != 'min':
         df.iat[-1, pos_point_info] = 'local_min'
 
     # now onto general local minima
@@ -2541,20 +2547,20 @@ def _get_point_info(df: pd.DataFrame):
 
         # local minima
         if i > 0 and i < len(df.index):
-            if df.iloc[i][0] < df.iloc[i - 1][0] and df.iloc[i][0] < df.iloc[
-                    next_index][0] and df.iloc[i, pos_point_info] != 'min':
+            if df.iloc[i, 0] < df.iloc[i - 1, 0] and df.iloc[i, 0] < df.iloc[
+                    next_index, 0] and df.iloc[i, pos_point_info] != 'min':
                 df.iat[i, pos_point_info] = 'local_min'
 
     # deal with wrap-around local maxima
 
     # first point
-    if df.iloc[0][0] > df.iloc[1][0] and df.iloc[0][0] > df.iloc[-1][
-            0] and df.iloc[0, pos_point_info] != 'max':
+    if df.iloc[0, 0] > df.iloc[1, 0] and df.iloc[0, 0] > df.iloc[
+            -1, 0] and df.iloc[0, pos_point_info] != 'max':
         df.iat[0, pos_point_info] = 'local_max'
 
     # last point
-    if df.iloc[-1][0] > df.iloc[-2][0] and df.iloc[-1][0] > df.iloc[0][
-            0] and df.iloc[-1, pos_point_info] != 'max':
+    if df.iloc[-1, 0] > df.iloc[-2, 0] and df.iloc[-1, 0] > df.iloc[
+            0, 0] and df.iloc[-1, pos_point_info] != 'max':
         df.iat[-1, pos_point_info] = 'local_max'
 
     # now onto general local maxima
@@ -2568,8 +2574,8 @@ def _get_point_info(df: pd.DataFrame):
 
         # local maxima
         if i > 0 and i < len(df.index):
-            if df.iloc[i][0] > df.iloc[i - 1][0] and df.iloc[i][0] > df.iloc[
-                    next_index][0] and df.iloc[i, pos_point_info] != 'max':
+            if df.iloc[i, 0] > df.iloc[i - 1, 0] and df.iloc[i, 0] > df.iloc[
+                    next_index, 0] and df.iloc[i, pos_point_info] != 'max':
                 df.iat[i, pos_point_info] = 'local_max'
 
     # a sanity check...
